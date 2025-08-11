@@ -10,10 +10,7 @@
             </h1>
           </div>
           <div v-if="viaje" class="flex items-center space-x-4">
-            <button 
-              @click="volverALista" 
-              class="btn-secondary"
-            >
+            <button @click="volverALista" class="btn-secondary">
               ← Volver a lista
             </button>
           </div>
@@ -27,20 +24,22 @@
       <div v-if="!viaje" class="space-y-8">
         <div class="flex justify-between items-center">
           <h2 class="text-3xl font-bold text-gray-900">Mis Viajes</h2>
-          <button 
-            @click="mostrarFormularioViaje = true" 
-            class="btn-primary"
-          >
+          <button @click="mostrarFormularioViaje = true" class="btn-primary">
             + Nuevo Viaje
           </button>
         </div>
 
         <!-- Formulario Nuevo Viaje -->
         <div v-if="mostrarFormularioViaje" class="card">
-          <h3 class="text-lg font-semibold text-gray-900 mb-4">Crear Nuevo Viaje</h3>
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">
+            Crear Nuevo Viaje
+          </h3>
           <form @submit.prevent="crearNuevoViaje" class="space-y-4">
             <div>
-              <label for="nombreViaje" class="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                for="nombreViaje"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Nombre del Viaje
               </label>
               <input
@@ -50,15 +49,13 @@
                 class="input-field"
                 placeholder="Ej: Viaje a Cartagena"
                 required
-              >
+              />
             </div>
             <div class="flex space-x-3">
-              <button type="submit" class="btn-primary">
-                Crear Viaje
-              </button>
-              <button 
-                type="button" 
-                @click="cancelarCreacionViaje" 
+              <button type="submit" class="btn-primary">Crear Viaje</button>
+              <button
+                type="button"
+                @click="cancelarCreacionViaje"
                 class="btn-secondary"
               >
                 Cancelar
@@ -68,24 +65,33 @@
         </div>
 
         <!-- Lista de Viajes -->
-        <div v-if="viajes.length === 0 && !mostrarFormularioViaje" class="text-center py-12">
+        <div
+          v-if="viajes.length === 0 && !mostrarFormularioViaje"
+          class="text-center py-12"
+        >
           <div class="text-gray-500 text-lg">
             <p class="mb-4">🧳 No tienes viajes creados aún</p>
-            <p class="text-sm">Crea tu primer viaje para empezar a gestionar gastos compartidos</p>
+            <p class="text-sm">
+              Crea tu primer viaje para empezar a gestionar gastos compartidos
+            </p>
           </div>
         </div>
 
         <div v-else class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <div 
-            v-for="viajeItem in viajes" 
+          <div
+            v-for="viajeItem in viajes"
             :key="viajeItem.id"
             class="card hover:shadow-lg transition-shadow cursor-pointer"
             @click="seleccionarViaje(viajeItem.id)"
           >
             <div class="flex justify-between items-start mb-3">
-              <h3 class="text-lg font-semibold text-gray-900">{{ viajeItem.nombre }}</h3>
-              <button 
-                @click.stop="eliminarViajeConfirm(viajeItem.id, viajeItem.nombre)"
+              <h3 class="text-lg font-semibold text-gray-900">
+                {{ viajeItem.nombre }}
+              </h3>
+              <button
+                @click.stop="
+                  eliminarViajeConfirm(viajeItem.id, viajeItem.nombre)
+                "
                 class="text-red-500 hover:text-red-700"
                 title="Eliminar viaje"
               >
@@ -105,40 +111,37 @@
 
       <!-- Vista Detalle del Viaje -->
       <div v-else>
-        <DetalleViaje 
-          :viaje="viaje" 
-          @viaje-actualizado="actualizarViaje"
-        />
+        <DetalleViaje :viaje="viaje" @viaje-actualizado="actualizarViaje" />
       </div>
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useStorage } from '@/composables/useStorage';
-import type { Viaje } from '@/types';
-import DetalleViaje from '@/components/DetalleViaje.vue';
+import { ref } from "vue";
+import { useStorage } from "@/composables/useStorage";
+import type { Viaje } from "@/types";
+import DetalleViaje from "@/components/DetalleViaje.vue";
 
 const { viajes, crearViaje, obtenerViaje, eliminarViaje } = useStorage();
 
 // Estado reactivo
 const viaje = ref<Viaje | null>(null);
 const mostrarFormularioViaje = ref(false);
-const nombreNuevoViaje = ref('');
+const nombreNuevoViaje = ref("");
 
 // Métodos
 const crearNuevoViaje = (): void => {
   if (nombreNuevoViaje.value.trim()) {
     const nuevoViaje = crearViaje(nombreNuevoViaje.value);
-    nombreNuevoViaje.value = '';
+    nombreNuevoViaje.value = "";
     mostrarFormularioViaje.value = false;
     seleccionarViaje(nuevoViaje.id);
   }
 };
 
 const cancelarCreacionViaje = (): void => {
-  nombreNuevoViaje.value = '';
+  nombreNuevoViaje.value = "";
   mostrarFormularioViaje.value = false;
 };
 
@@ -154,7 +157,11 @@ const volverALista = (): void => {
 };
 
 const eliminarViajeConfirm = (id: string, nombre: string): void => {
-  if (confirm(`¿Estás seguro de que quieres eliminar el viaje "${nombre}"? Esta acción no se puede deshacer.`)) {
+  if (
+    confirm(
+      `¿Estás seguro de que quieres eliminar el viaje "${nombre}"? Esta acción no se puede deshacer.`
+    )
+  ) {
     eliminarViaje(id);
   }
 };
@@ -169,10 +176,10 @@ const actualizarViaje = (): void => {
 };
 
 const formatearFecha = (fecha: string): string => {
-  return new Date(fecha).toLocaleDateString('es-ES', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
+  return new Date(fecha).toLocaleDateString("es-ES", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
   });
 };
 </script>

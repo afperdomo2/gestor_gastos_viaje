@@ -19,7 +19,7 @@
             'py-2 px-1 border-b-2 font-medium text-sm',
             tabActiva === tab.id
               ? 'border-primary-500 text-primary-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
           ]"
         >
           {{ tab.nombre }}
@@ -31,15 +31,12 @@
     <div>
       <!-- Tab Resumen -->
       <div v-show="tabActiva === 'resumen'">
-        <ResumenViaje 
-          :viaje="viaje" 
-          :resumen="resumen"
-        />
+        <ResumenViaje :viaje="viaje" :resumen="resumen" />
       </div>
 
       <!-- Tab Participantes -->
       <div v-show="tabActiva === 'participantes'">
-        <GestionParticipantes 
+        <GestionParticipantes
           :viaje="viaje"
           @participante-agregado="actualizarViaje"
           @participante-eliminado="actualizarViaje"
@@ -48,7 +45,7 @@
 
       <!-- Tab Gastos -->
       <div v-show="tabActiva === 'gastos'">
-        <GestionGastos 
+        <GestionGastos
           :viaje="viaje"
           @gasto-agregado="actualizarViaje"
           @gasto-eliminado="actualizarViaje"
@@ -57,23 +54,20 @@
 
       <!-- Tab Balances -->
       <div v-show="tabActiva === 'balances'">
-        <BalancesViaje 
-          :viaje="viaje"
-          :resumen="resumen"
-        />
+        <BalancesViaje :viaje="viaje" :resumen="resumen" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
-import { useStorage } from '@/composables/useStorage';
-import type { Viaje } from '@/types';
-import ResumenViaje from '@/components/ResumenViaje.vue';
-import GestionParticipantes from '@/components/GestionParticipantes.vue';
-import GestionGastos from '@/components/GestionGastos.vue';
-import BalancesViaje from '@/components/BalancesViaje.vue';
+import BalancesViaje from "@/components/BalancesViaje.vue";
+import GestionGastos from "@/components/GestionGastos.vue";
+import GestionParticipantes from "@/components/GestionParticipantes.vue";
+import ResumenViaje from "@/components/ResumenViaje.vue";
+import { useStorage } from "@/composables/useStorage";
+import type { Viaje } from "@/types";
+import { computed, ref, watch } from "vue";
 
 // Props
 const props = defineProps<{
@@ -89,13 +83,13 @@ const emit = defineEmits<{
 const { calcularResumenViaje } = useStorage();
 
 // Estado reactivo
-const tabActiva = ref('resumen');
+const tabActiva = ref("resumen");
 
 const tabs = [
-  { id: 'resumen', nombre: '📊 Resumen' },
-  { id: 'participantes', nombre: '👥 Participantes' },
-  { id: 'gastos', nombre: '💸 Gastos' },
-  { id: 'balances', nombre: '⚖️ Balances' },
+  { id: "resumen", nombre: "📊 Resumen" },
+  { id: "participantes", nombre: "👥 Participantes" },
+  { id: "gastos", nombre: "💸 Gastos" },
+  { id: "balances", nombre: "⚖️ Balances" },
 ];
 
 // Computed
@@ -105,21 +99,24 @@ const resumen = computed(() => {
 
 // Métodos
 const actualizarViaje = (): void => {
-  emit('viajeActualizado');
+  emit("viajeActualizado");
 };
 
 const formatearFecha = (fecha: string): string => {
-  return new Date(fecha).toLocaleDateString('es-ES', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
+  return new Date(fecha).toLocaleDateString("es-ES", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 };
 
 // Watchers para cambiar automáticamente de tab cuando sea necesario
-watch(() => props.viaje.participantes.length, (newVal) => {
-  if (newVal === 0 && tabActiva.value !== 'participantes') {
-    tabActiva.value = 'participantes';
+watch(
+  () => props.viaje.participantes.length,
+  (newVal) => {
+    if (newVal === 0 && tabActiva.value !== "participantes") {
+      tabActiva.value = "participantes";
+    }
   }
-});
+);
 </script>
