@@ -111,6 +111,64 @@
       </div>
     </div>
 
+    <!-- Liquidación Detallada Individual -->
+    <div v-if="resumen && resumen.balances.length > 0" class="card">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">
+        🧾 Liquidación Detallada Individual
+      </h3>
+      <p class="text-sm text-gray-600 mb-6">
+        Para cada persona que debe dinero, se muestra exactamente cuánto debe pagar a cada acreedor, considerando las deudas cruzadas.
+      </p>
+
+      <div class="space-y-6">
+        <div v-for="deudor in deudores" :key="deudor.personaId" class="border border-gray-200 rounded-lg p-4">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                <span class="font-semibold text-red-700">
+                  {{ obtenerIniciales(deudor.nombre) }}
+                </span>
+              </div>
+              <div>
+                <h4 class="font-medium text-gray-900">{{ deudor.nombre }}</h4>
+                <p class="text-sm text-gray-600">
+                  Debe pagar un total de: <span class="font-bold text-red-600">${{ formatearMoneda(Math.abs(deudor.balance)) }}</span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <h5 class="text-sm font-medium text-gray-700 mb-2">💰 Distribución de pagos:</h5>
+            <div class="grid gap-3">
+              <div 
+                v-for="pago in calcularPagosDetallados(deudor.personaId)" 
+                :key="pago.acreedorId"
+                class="flex justify-between items-center p-3 bg-gray-50 rounded-lg border"
+              >
+                <div class="flex items-center space-x-3">
+                  <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                    <span class="text-xs font-semibold text-green-700">
+                      {{ obtenerIniciales(pago.acreedorNombre) }}
+                    </span>
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-gray-900">{{ pago.acreedorNombre }}</p>
+                    <p class="text-xs text-gray-500">
+                      {{ pago.descripcion }}
+                    </p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="font-bold text-green-600">${{ formatearMoneda(pago.monto) }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Resumen de Liquidación -->
     <div v-if="resumen && resumen.balances.length > 0" class="card">
       <h3 class="text-lg font-semibold text-gray-900 mb-4">
@@ -276,5 +334,67 @@ const getBalanceTextClass = (balance: number): string => {
 const getDeudaClass = (monto: number): string => {
   if (monto > 0) return "font-medium text-red-600";
   return "text-gray-400";
+};
+
+// Función para calcular los pagos detallados de un deudor específico
+const calcularPagosDetallados = (deudorId: string) => {
+  if (!props.resumen) return [];
+  
+  const pagos: Array<{
+    acreedorId: string;
+    acreedorNombre: string;
+    monto: number;
+    descripcion: string;
+  }> = [];
+
+  // Obtener el balance del deudor
+  const deudor = props.resumen.balances.find(b => b.personaId === deudorId);
+  if (!deudor || deudor.balance >= 0) return pagos;
+
+  let montoRestante = Math.abs(deudor.balance);
+
+  // Ordenar acreedores por mayor saldo positivo
+  const acreedoresOrdenados = acreedores.value.slice().sort((a, b) => b.balance - a.balance);
+
+  for (const acreedor of acreedoresOrdenados) {
+    if (montoRestante <= 0) break;
+
+    // Calcular cuánto debe pagar a este acreedor
+    let montoPago = 0;
+    let descripcion = '';
+
+    // Verificar si hay deuda directa en la matriz
+    const deudaDirecta = props.resumen.deudaMatriz[acreedor.personaId]?.[deudorId] || 0;
+    const deudaInversa = props.resumen.deudaMatriz[deudorId]?.[acreedor.personaId] || 0;
+
+    if (deudaDirecta > 0 && deudaInversa > 0) {
+      // Hay deudas cruzadas - calcular la diferencia
+      const diferencia = deudaDirecta - deudaInversa;
+      if (diferencia > 0) {
+        montoPago = Math.min(diferencia, montoRestante);
+        descripcion = `Deuda neta (${formatearMoneda(deudaDirecta)} - ${formatearMoneda(deudaInversa)})`;
+      }
+    } else if (deudaDirecta > 0) {
+      // Solo deuda directa
+      montoPago = Math.min(deudaDirecta, montoRestante);
+      descripcion = 'Deuda directa';
+    } else if (acreedor.balance > 0 && montoRestante > 0) {
+      // Distribución proporcional del resto
+      montoPago = Math.min(acreedor.balance, montoRestante);
+      descripcion = 'Distribución proporcional';
+    }
+
+    if (montoPago > 0) {
+      pagos.push({
+        acreedorId: acreedor.personaId,
+        acreedorNombre: acreedor.nombre,
+        monto: montoPago,
+        descripcion: descripcion
+      });
+      montoRestante -= montoPago;
+    }
+  }
+
+  return pagos;
 };
 </script>

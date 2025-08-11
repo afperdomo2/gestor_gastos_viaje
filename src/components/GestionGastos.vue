@@ -195,35 +195,6 @@
             Total: ${{ formatearMoneda(totalGastos) }}
           </div>
           <!-- Botones para cambiar vista -->
-          <div
-            v-if="viaje.gastos.length > 0"
-            class="flex rounded-lg border border-gray-300 overflow-hidden"
-          >
-            <button
-              @click="vistaTabla = false"
-              :class="[
-                'px-3 py-1 text-sm font-medium transition-colors',
-                !vistaTabla
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50',
-              ]"
-              title="Vista de tarjetas"
-            >
-              📄 Tarjetas
-            </button>
-            <button
-              @click="vistaTabla = true"
-              :class="[
-                'px-3 py-1 text-sm font-medium transition-colors',
-                vistaTabla
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50',
-              ]"
-              title="Vista de tabla"
-            >
-              📊 Tabla
-            </button>
-          </div>
         </div>
       </div>
 
@@ -237,62 +208,10 @@
         </p>
       </div>
 
-      <!-- Vista de Tarjetas -->
-      <div v-else-if="!vistaTabla" class="space-y-3">
-        <div
-          v-for="gasto in gastosOrdenados"
-          :key="gasto.id"
-          class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50"
-        >
-          <div class="flex justify-between items-start">
-            <div class="flex-1">
-              <div class="flex justify-between items-start mb-2">
-                <h4 class="text-lg font-medium text-gray-900">
-                  {{ gasto.descripcion }}
-                </h4>
-                <div class="text-right">
-                  <div class="text-xl font-bold text-gray-900">
-                    ${{ formatearMoneda(gasto.monto) }}
-                  </div>
-                  <div class="text-sm text-gray-600">
-                    {{ formatearFecha(gasto.fecha) }}
-                  </div>
-                </div>
-              </div>
-
-              <div class="text-sm text-gray-600 space-y-1">
-                <p>
-                  <span class="font-medium">Pagado por:</span>
-                  {{ obtenerNombreParticipante(gasto.pagadoPorId) }}
-                </p>
-                <p>
-                  <span class="font-medium">Participantes:</span>
-                  {{ obtenerNombresParticipantes(gasto.participantesDeudaIds) }}
-                </p>
-                <p>
-                  <span class="font-medium">Por persona:</span>
-                  ${{
-                    formatearMoneda(
-                      gasto.monto / gasto.participantesDeudaIds.length
-                    )
-                  }}
-                </p>
-              </div>
-            </div>
-
-            <button
-              @click="eliminarGastoConfirm(gasto.id, gasto.descripcion)"
-              class="ml-4 text-red-500 hover:text-red-700 p-2 rounded-md hover:bg-red-50"
-              title="Eliminar gasto"
-            >
-              🗑️
-            </button>
-          </div>
-        </div>
-      </div>
-
       <!-- Vista de Tabla -->
-      <div v-else class="overflow-x-auto lg:overflow-x-visible border border-gray-200 rounded-lg">
+      <div
+        class="overflow-x-auto lg:overflow-x-visible border border-gray-200 rounded-lg"
+      >
         <table class="w-full lg:table-fixed divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
@@ -326,11 +245,17 @@
                 <div class="flex flex-col items-center space-y-1">
                   <div
                     class="w-5 lg:w-6 h-5 lg:h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                    :style="{ backgroundColor: obtenerColorParticipante(participante.id) }"
+                    :style="{
+                      backgroundColor: obtenerColorParticipante(
+                        participante.id
+                      ),
+                    }"
                   >
                     {{ obtenerInicialesNombre(participante.nombre) }}
                   </div>
-                  <span class="text-[9px] lg:text-[10px] leading-tight hidden lg:block">
+                  <span
+                    class="text-[9px] lg:text-[10px] leading-tight hidden lg:block"
+                  >
                     {{ obtenerNombreCorto(participante.nombre) }}
                   </span>
                 </div>
@@ -353,13 +278,15 @@
               :key="gasto.id"
               class="hover:bg-gray-50 transition-colors"
             >
-              <td class="px-2 lg:px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td
+                class="px-2 lg:px-3 py-4 whitespace-nowrap text-sm text-gray-900"
+              >
                 <div class="font-medium text-xs lg:text-sm">
                   {{ formatearFechaTabla(gasto.fecha) }}
                 </div>
               </td>
               <td class="px-2 lg:px-3 py-4">
-                <div class="text-sm font-medium text-gray-900 truncate">
+                <div class="text-sm font-medium text-gray-900">
                   {{ gasto.descripcion }}
                 </div>
               </td>
@@ -372,14 +299,26 @@
                 <div class="flex items-center">
                   <div
                     class="w-5 lg:w-6 h-5 lg:h-6 rounded-full flex items-center justify-center mr-1 lg:mr-2"
-                    :style="{ backgroundColor: obtenerColorParticipante(gasto.pagadoPorId) }"
+                    :style="{
+                      backgroundColor: obtenerColorParticipante(
+                        gasto.pagadoPorId
+                      ),
+                    }"
                   >
                     <span class="text-white font-semibold text-xs">
-                      {{ obtenerInicialesNombre(obtenerNombreParticipante(gasto.pagadoPorId)) }}
+                      {{
+                        obtenerInicialesNombre(
+                          obtenerNombreParticipante(gasto.pagadoPorId)
+                        )
+                      }}
                     </span>
                   </div>
                   <div class="text-xs lg:text-sm text-gray-900 truncate">
-                    {{ obtenerNombreCorto(obtenerNombreParticipante(gasto.pagadoPorId)) }}
+                    {{
+                      obtenerNombreCorto(
+                        obtenerNombreParticipante(gasto.pagadoPorId)
+                      )
+                    }}
                   </div>
                 </div>
               </td>
@@ -408,7 +347,11 @@
               </td>
               <td class="px-2 lg:px-3 py-4 whitespace-nowrap text-right">
                 <div class="text-sm font-medium text-primary-600">
-                  ${{ formatearMoneda(gasto.monto / gasto.participantesDeudaIds.length) }}
+                  ${{
+                    formatearMoneda(
+                      gasto.monto / gasto.participantesDeudaIds.length
+                    )
+                  }}
                 </div>
               </td>
               <td class="px-2 lg:px-3 py-4 whitespace-nowrap text-center">
