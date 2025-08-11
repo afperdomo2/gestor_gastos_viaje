@@ -118,7 +118,8 @@ export function useStorage() {
     descripcion: string,
     monto: number,
     pagadoPorId: string,
-    participantesDeudaIds: string[]
+    participantesDeudaIds: string[],
+    fechaGasto?: string
   ): Gasto | null => {
     const viaje = obtenerViaje(viajeId);
     if (!viaje) return null;
@@ -129,7 +130,9 @@ export function useStorage() {
       monto: Math.round(monto * 100) / 100, // Redondear a 2 decimales
       pagadoPorId,
       participantesDeudaIds: [...participantesDeudaIds],
-      fecha: new Date().toISOString(),
+      fecha: fechaGasto
+        ? new Date(fechaGasto + "T12:00:00").toISOString()
+        : new Date().toISOString(),
     };
 
     viaje.gastos.push(nuevoGasto);

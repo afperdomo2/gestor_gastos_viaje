@@ -55,6 +55,23 @@
           />
         </div>
 
+        <!-- Fecha del Gasto -->
+        <div>
+          <label
+            for="fechaGasto"
+            class="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Fecha del Gasto
+          </label>
+          <input
+            id="fechaGasto"
+            v-model="formulario.fechaGasto"
+            type="date"
+            class="input-field"
+            required
+          />
+        </div>
+
         <!-- Pagado por -->
         <div>
           <label
@@ -173,8 +190,40 @@
         <h3 class="text-lg font-semibold text-gray-900">
           Gastos Registrados ({{ viaje.gastos.length }})
         </h3>
-        <div v-if="viaje.gastos.length > 0" class="text-sm text-gray-600">
-          Total: ${{ formatearMoneda(totalGastos) }}
+        <div class="flex items-center space-x-4">
+          <div v-if="viaje.gastos.length > 0" class="text-sm text-gray-600">
+            Total: ${{ formatearMoneda(totalGastos) }}
+          </div>
+          <!-- Botones para cambiar vista -->
+          <div
+            v-if="viaje.gastos.length > 0"
+            class="flex rounded-lg border border-gray-300 overflow-hidden"
+          >
+            <button
+              @click="vistaTabla = false"
+              :class="[
+                'px-3 py-1 text-sm font-medium transition-colors',
+                !vistaTabla
+                  ? 'bg-primary-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-50',
+              ]"
+              title="Vista de tarjetas"
+            >
+              📄 Tarjetas
+            </button>
+            <button
+              @click="vistaTabla = true"
+              :class="[
+                'px-3 py-1 text-sm font-medium transition-colors',
+                vistaTabla
+                  ? 'bg-primary-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-50',
+              ]"
+              title="Vista de tabla"
+            >
+              📊 Tabla
+            </button>
+          </div>
         </div>
       </div>
 
@@ -188,7 +237,8 @@
         </p>
       </div>
 
-      <div v-else class="space-y-3">
+      <!-- Vista de Tarjetas -->
+      <div v-else-if="!vistaTabla" class="space-y-3">
         <div
           v-for="gasto in gastosOrdenados"
           :key="gasto.id"
@@ -240,12 +290,131 @@
           </div>
         </div>
       </div>
+
+      <!-- Vista de Tabla -->
+      <div v-else class="overflow-x-auto border border-gray-200 rounded-lg">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th
+                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                📅 Fecha
+              </th>
+              <th
+                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                📝 Descripción
+              </th>
+              <th
+                class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                💰 Monto
+              </th>
+              <th
+                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                💳 Pagado por
+              </th>
+              <th
+                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                👥 Participantes
+              </th>
+              <th
+                class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                🔢 Por persona
+              </th>
+              <th
+                class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                ⚙️ Acciones
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr
+              v-for="gasto in gastosOrdenados"
+              :key="gasto.id"
+              class="hover:bg-gray-50 transition-colors"
+            >
+              <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                <div class="font-medium">
+                  {{ formatearFechaTabla(gasto.fecha) }}
+                </div>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">
+                  {{ gasto.descripcion }}
+                </div>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap text-right">
+                <div class="text-sm font-bold text-green-600">
+                  ${{ formatearMoneda(gasto.monto) }}
+                </div>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div
+                    class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center mr-3"
+                  >
+                    <span class="text-primary-600 font-semibold text-xs">
+                      {{
+                        obtenerInicialesNombre(
+                          obtenerNombreParticipante(gasto.pagadoPorId)
+                        )
+                      }}
+                    </span>
+                  </div>
+                  <div class="text-sm text-gray-900">
+                    {{ obtenerNombreParticipante(gasto.pagadoPorId) }}
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-4 max-w-xs">
+                <div
+                  class="text-sm text-gray-900 truncate"
+                  :title="
+                    obtenerNombresParticipantes(gasto.participantesDeudaIds)
+                  "
+                >
+                  {{ obtenerNombresParticipantes(gasto.participantesDeudaIds) }}
+                </div>
+                <div class="text-xs text-gray-500 mt-1">
+                  {{ gasto.participantesDeudaIds.length }} persona{{
+                    gasto.participantesDeudaIds.length !== 1 ? "s" : ""
+                  }}
+                </div>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap text-right">
+                <div class="text-sm font-medium text-primary-600">
+                  ${{
+                    formatearMoneda(
+                      gasto.monto / gasto.participantesDeudaIds.length
+                    )
+                  }}
+                </div>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap text-center">
+                <button
+                  @click="eliminarGastoConfirm(gasto.id, gasto.descripcion)"
+                  class="text-red-500 hover:text-red-700 p-2 rounded-md hover:bg-red-50 transition-colors"
+                  title="Eliminar gasto"
+                >
+                  🗑️
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useStorage } from "@/composables/useStorage";
 import type { Viaje } from "@/types";
 
@@ -267,9 +436,12 @@ const { agregarGasto, eliminarGasto } = useStorage();
 const formulario = ref({
   descripcion: "",
   monto: 0,
+  fechaGasto: new Date().toISOString().split("T")[0], // Fecha de hoy por defecto
   pagadoPorId: "",
   participantesDeudaIds: [] as string[],
 });
+
+const vistaTabla = ref(false); // false = vista de cards, true = vista de tabla
 
 // Computed
 const gastosOrdenados = computed(() => {
@@ -281,6 +453,22 @@ const gastosOrdenados = computed(() => {
 const totalGastos = computed(() => {
   return props.viaje.gastos.reduce((total, gasto) => total + gasto.monto, 0);
 });
+
+// Watcher para seleccionar automáticamente todos los participantes cuando cambian
+watch(
+  () => props.viaje.participantes,
+  (newParticipantes) => {
+    if (
+      newParticipantes.length > 0 &&
+      formulario.value.participantesDeudaIds.length === 0
+    ) {
+      formulario.value.participantesDeudaIds = newParticipantes.map(
+        (p) => p.id
+      );
+    }
+  },
+  { immediate: true, deep: true }
+);
 
 // Métodos
 const agregarNuevoGasto = (): void => {
@@ -294,7 +482,8 @@ const agregarNuevoGasto = (): void => {
     formulario.value.descripcion,
     formulario.value.monto,
     formulario.value.pagadoPorId,
-    formulario.value.participantesDeudaIds
+    formulario.value.participantesDeudaIds,
+    formulario.value.fechaGasto
   );
 
   if (gasto) {
@@ -318,8 +507,9 @@ const limpiarFormulario = (): void => {
   formulario.value = {
     descripcion: "",
     monto: 0,
+    fechaGasto: new Date().toISOString().split("T")[0], // Resetear a fecha de hoy
     pagadoPorId: "",
-    participantesDeudaIds: [],
+    participantesDeudaIds: props.viaje.participantes.map((p) => p.id), // Seleccionar todos automáticamente
   };
 };
 
@@ -343,6 +533,15 @@ const obtenerNombresParticipantes = (ids: string[]): string => {
   return nombres.join(", ");
 };
 
+const obtenerInicialesNombre = (nombre: string): string => {
+  return nombre
+    .split(" ")
+    .map((palabra) => palabra.charAt(0))
+    .join("")
+    .toUpperCase()
+    .substring(0, 2);
+};
+
 const formatearMoneda = (monto: number): string => {
   return new Intl.NumberFormat("es-CO", {
     minimumFractionDigits: 0,
@@ -357,6 +556,14 @@ const formatearFecha = (fecha: string): string => {
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+  });
+};
+
+const formatearFechaTabla = (fecha: string): string => {
+  return new Date(fecha).toLocaleDateString("es-ES", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
   });
 };
 </script>
