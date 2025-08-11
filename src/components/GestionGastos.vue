@@ -273,97 +273,131 @@
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            <tr
-              v-for="gasto in gastosOrdenados"
-              :key="gasto.id"
-              class="hover:bg-gray-50 transition-colors"
+            <template
+              v-for="(fecha, fechaIndex) in fechasOrdenadas"
+              :key="fecha"
             >
-              <td
-                class="px-2 lg:px-3 py-4 whitespace-nowrap text-sm text-gray-900"
-              >
-                <div class="font-medium text-xs lg:text-sm">
-                  {{ formatearFechaTabla(gasto.fecha) }}
-                </div>
-              </td>
-              <td class="px-2 lg:px-3 py-4">
-                <div class="text-sm font-medium text-gray-900">
-                  {{ gasto.descripcion }}
-                </div>
-              </td>
-              <td class="px-2 lg:px-3 py-4 whitespace-nowrap text-right">
-                <div class="text-sm font-bold text-green-600">
-                  ${{ formatearMoneda(gasto.monto) }}
-                </div>
-              </td>
-              <td class="px-2 lg:px-3 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                  <div
-                    class="w-5 lg:w-6 h-5 lg:h-6 rounded-full flex items-center justify-center mr-1 lg:mr-2"
-                    :style="{
-                      backgroundColor: obtenerColorParticipante(
-                        gasto.pagadoPorId
-                      ),
-                    }"
-                  >
-                    <span class="text-white font-semibold text-xs">
-                      {{
-                        obtenerInicialesNombre(
-                          obtenerNombreParticipante(gasto.pagadoPorId)
-                        )
+              <!-- Separador de fecha -->
+              <tr class="bg-blue-50 border-t-2 border-blue-200">
+                <td
+                  :colspan="4 + viaje.participantes.length + 2"
+                  class="px-3 py-3 text-center"
+                >
+                  <div class="flex items-center justify-center space-x-2">
+                    <span
+                      class="text-sm font-semibold text-blue-700 uppercase tracking-wide"
+                    >
+                      📅 {{ formatearFechaSeparador(fecha) }}
+                    </span>
+                    <span
+                      class="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full"
+                    >
+                      {{ gastosAgrupadosPorFecha[fecha].length }} gasto{{
+                        gastosAgrupadosPorFecha[fecha].length !== 1 ? "s" : ""
                       }}
                     </span>
                   </div>
-                  <div class="text-xs lg:text-sm text-gray-900 truncate">
-                    {{
-                      obtenerNombreCorto(
-                        obtenerNombreParticipante(gasto.pagadoPorId)
+                </td>
+              </tr>
+
+              <!-- Gastos de esa fecha -->
+              <tr
+                v-for="(gasto, gastoIndex) in gastosAgrupadosPorFecha[fecha]"
+                :key="gasto.id"
+                :class="[
+                  obtenerClaseFilaAlternada(fechaIndex, gastoIndex),
+                  'hover:bg-blue-50 transition-colors border-l-4 border-transparent hover:border-blue-300',
+                ]"
+              >
+                <td
+                  class="px-2 lg:px-3 py-4 whitespace-nowrap text-sm text-gray-900"
+                >
+                  <div class="font-medium text-xs lg:text-sm">
+                    {{ formatearFechaTabla(gasto.fecha) }}
+                  </div>
+                </td>
+                <td class="px-2 lg:px-3 py-4">
+                  <div class="text-sm font-medium text-gray-900">
+                    {{ gasto.descripcion }}
+                  </div>
+                </td>
+                <td class="px-2 lg:px-3 py-4 whitespace-nowrap text-right">
+                  <div class="text-sm font-bold text-green-600">
+                    ${{ formatearMoneda(gasto.monto) }}
+                  </div>
+                </td>
+                <td class="px-2 lg:px-3 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div
+                      class="w-5 lg:w-6 h-5 lg:h-6 rounded-full flex items-center justify-center mr-1 lg:mr-2"
+                      :style="{
+                        backgroundColor: obtenerColorParticipante(
+                          gasto.pagadoPorId
+                        ),
+                      }"
+                    >
+                      <span class="text-white font-semibold text-xs">
+                        {{
+                          obtenerInicialesNombre(
+                            obtenerNombreParticipante(gasto.pagadoPorId)
+                          )
+                        }}
+                      </span>
+                    </div>
+                    <div class="text-xs lg:text-sm text-gray-900 truncate">
+                      {{
+                        obtenerNombreCorto(
+                          obtenerNombreParticipante(gasto.pagadoPorId)
+                        )
+                      }}
+                    </div>
+                  </div>
+                </td>
+                <!-- Celdas de participación por participante -->
+                <td
+                  v-for="participante in viaje.participantes"
+                  :key="participante.id"
+                  class="px-1 lg:px-2 py-4 whitespace-nowrap text-center"
+                >
+                  <div class="flex justify-center">
+                    <span
+                      v-if="
+                        gasto.participantesDeudaIds.includes(participante.id)
+                      "
+                      class="inline-flex items-center justify-center w-4 lg:w-5 h-4 lg:h-5 bg-green-100 text-green-600 rounded-full text-xs"
+                      :title="`${participante.nombre} participa en este gasto`"
+                    >
+                      ✓
+                    </span>
+                    <span
+                      v-else
+                      class="inline-flex items-center justify-center w-4 lg:w-5 h-4 lg:h-5 bg-gray-100 text-gray-400 rounded-full text-xs"
+                      :title="`${participante.nombre} no participa en este gasto`"
+                    >
+                      ✗
+                    </span>
+                  </div>
+                </td>
+                <td class="px-2 lg:px-3 py-4 whitespace-nowrap text-right">
+                  <div class="text-sm font-medium text-primary-600">
+                    ${{
+                      formatearMoneda(
+                        gasto.monto / gasto.participantesDeudaIds.length
                       )
                     }}
                   </div>
-                </div>
-              </td>
-              <!-- Celdas de participación por participante -->
-              <td
-                v-for="participante in viaje.participantes"
-                :key="participante.id"
-                class="px-1 lg:px-2 py-4 whitespace-nowrap text-center"
-              >
-                <div class="flex justify-center">
-                  <span
-                    v-if="gasto.participantesDeudaIds.includes(participante.id)"
-                    class="inline-flex items-center justify-center w-4 lg:w-5 h-4 lg:h-5 bg-green-100 text-green-600 rounded-full text-xs"
-                    :title="`${participante.nombre} participa en este gasto`"
+                </td>
+                <td class="px-2 lg:px-3 py-4 whitespace-nowrap text-center">
+                  <button
+                    @click="eliminarGastoConfirm(gasto.id, gasto.descripcion)"
+                    class="text-red-500 hover:text-red-700 p-1 lg:p-2 rounded-md hover:bg-red-50 transition-colors text-sm"
+                    title="Eliminar gasto"
                   >
-                    ✓
-                  </span>
-                  <span
-                    v-else
-                    class="inline-flex items-center justify-center w-4 lg:w-5 h-4 lg:h-5 bg-gray-100 text-gray-400 rounded-full text-xs"
-                    :title="`${participante.nombre} no participa en este gasto`"
-                  >
-                    ✗
-                  </span>
-                </div>
-              </td>
-              <td class="px-2 lg:px-3 py-4 whitespace-nowrap text-right">
-                <div class="text-sm font-medium text-primary-600">
-                  ${{
-                    formatearMoneda(
-                      gasto.monto / gasto.participantesDeudaIds.length
-                    )
-                  }}
-                </div>
-              </td>
-              <td class="px-2 lg:px-3 py-4 whitespace-nowrap text-center">
-                <button
-                  @click="eliminarGastoConfirm(gasto.id, gasto.descripcion)"
-                  class="text-red-500 hover:text-red-700 p-1 lg:p-2 rounded-md hover:bg-red-50 transition-colors text-sm"
-                  title="Eliminar gasto"
-                >
-                  🗑️
-                </button>
-              </td>
-            </tr>
+                    🗑️
+                  </button>
+                </td>
+              </tr>
+            </template>
           </tbody>
         </table>
       </div>
@@ -399,12 +433,42 @@ const formulario = ref({
   participantesDeudaIds: [] as string[],
 });
 
-const vistaTabla = ref(false); // false = vista de cards, true = vista de tabla
-
 // Computed
 const gastosOrdenados = computed(() => {
   return [...props.viaje.gastos].sort(
     (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+  );
+});
+
+const gastosAgrupadosPorFecha = computed(() => {
+  const grupos: { [fecha: string]: typeof props.viaje.gastos } = {};
+
+  gastosOrdenados.value.forEach((gasto) => {
+    // Extraer solo la fecha sin procesar como Date para evitar problemas de zona horaria
+    let fechaSolo = gasto.fecha.split("T")[0]; // Obtener solo la fecha sin hora
+
+    // Si la fecha tiene formato ISO, la usamos directamente
+    if (!fechaSolo.includes("-")) {
+      // Si por alguna razón no está en formato ISO, intentamos extraerla
+      const fechaObj = new Date(gasto.fecha);
+      const year = fechaObj.getFullYear();
+      const month = String(fechaObj.getMonth() + 1).padStart(2, "0");
+      const day = String(fechaObj.getDate()).padStart(2, "0");
+      fechaSolo = `${year}-${month}-${day}`;
+    }
+
+    if (!grupos[fechaSolo]) {
+      grupos[fechaSolo] = [];
+    }
+    grupos[fechaSolo].push(gasto);
+  });
+
+  return grupos;
+});
+
+const fechasOrdenadas = computed(() => {
+  return Object.keys(gastosAgrupadosPorFecha.value).sort(
+    (a, b) => new Date(b).getTime() - new Date(a).getTime()
   );
 });
 
@@ -524,10 +588,36 @@ const formatearFecha = (fecha: string): string => {
 };
 
 const formatearFechaTabla = (fecha: string): string => {
-  return new Date(fecha).toLocaleDateString("es-ES", {
+  // Extraer la fecha sin la hora para evitar problemas de zona horaria
+  const fechaSolo = fecha.split("T")[0];
+  const [year, month, day] = fechaSolo.split("-").map(Number);
+  const fechaLocal = new Date(year, month - 1, day); // month - 1 porque los meses van de 0-11
+
+  return fechaLocal.toLocaleDateString("es-ES", {
     day: "2-digit",
     month: "2-digit",
     year: "2-digit",
   });
+};
+
+const formatearFechaSeparador = (fecha: string): string => {
+  // Crear fecha local para evitar problemas de zona horaria
+  const [year, month, day] = fecha.split("-").map(Number);
+  const fechaLocal = new Date(year, month - 1, day); // month - 1 porque los meses van de 0-11
+
+  return fechaLocal.toLocaleDateString("es-ES", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
+const obtenerClaseFilaAlternada = (
+  fechaIndex: number,
+  gastoIndex: number
+): string => {
+  const esFilaPar = (fechaIndex + gastoIndex) % 2 === 0;
+  return esFilaPar ? "bg-white" : "bg-gray-50";
 };
 </script>
