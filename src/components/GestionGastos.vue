@@ -292,42 +292,56 @@
       </div>
 
       <!-- Vista de Tabla -->
-      <div v-else class="overflow-x-auto border border-gray-200 rounded-lg">
-        <table class="min-w-full divide-y divide-gray-200">
+      <div v-else class="overflow-x-auto lg:overflow-x-visible border border-gray-200 rounded-lg">
+        <table class="w-full lg:table-fixed divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
               <th
-                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16 lg:w-20"
               >
                 📅 Fecha
               </th>
               <th
-                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
                 📝 Descripción
               </th>
               <th
-                class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-2 lg:px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-20 lg:w-24"
               >
                 💰 Monto
               </th>
               <th
-                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24 lg:w-32"
               >
                 💳 Pagado por
               </th>
+              <!-- Columnas dinámicas por participante -->
               <th
-                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                v-for="participante in viaje.participantes"
+                :key="participante.id"
+                class="px-1 lg:px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12 lg:w-16"
+                :title="participante.nombre"
               >
-                👥 Participantes
+                <div class="flex flex-col items-center space-y-1">
+                  <div
+                    class="w-5 lg:w-6 h-5 lg:h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                    :style="{ backgroundColor: obtenerColorParticipante(participante.id) }"
+                  >
+                    {{ obtenerInicialesNombre(participante.nombre) }}
+                  </div>
+                  <span class="text-[9px] lg:text-[10px] leading-tight hidden lg:block">
+                    {{ obtenerNombreCorto(participante.nombre) }}
+                  </span>
+                </div>
               </th>
               <th
-                class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-2 lg:px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-20 lg:w-24"
               >
                 🔢 Por persona
               </th>
               <th
-                class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-2 lg:px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16 lg:w-20"
               >
                 ⚙️ Acciones
               </th>
@@ -339,67 +353,68 @@
               :key="gasto.id"
               class="hover:bg-gray-50 transition-colors"
             >
-              <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                <div class="font-medium">
+              <td class="px-2 lg:px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                <div class="font-medium text-xs lg:text-sm">
                   {{ formatearFechaTabla(gasto.fecha) }}
                 </div>
               </td>
-              <td class="px-4 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">
+              <td class="px-2 lg:px-3 py-4">
+                <div class="text-sm font-medium text-gray-900 truncate">
                   {{ gasto.descripcion }}
                 </div>
               </td>
-              <td class="px-4 py-4 whitespace-nowrap text-right">
+              <td class="px-2 lg:px-3 py-4 whitespace-nowrap text-right">
                 <div class="text-sm font-bold text-green-600">
                   ${{ formatearMoneda(gasto.monto) }}
                 </div>
               </td>
-              <td class="px-4 py-4 whitespace-nowrap">
+              <td class="px-2 lg:px-3 py-4 whitespace-nowrap">
                 <div class="flex items-center">
                   <div
-                    class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center mr-3"
+                    class="w-5 lg:w-6 h-5 lg:h-6 rounded-full flex items-center justify-center mr-1 lg:mr-2"
+                    :style="{ backgroundColor: obtenerColorParticipante(gasto.pagadoPorId) }"
                   >
-                    <span class="text-primary-600 font-semibold text-xs">
-                      {{
-                        obtenerInicialesNombre(
-                          obtenerNombreParticipante(gasto.pagadoPorId)
-                        )
-                      }}
+                    <span class="text-white font-semibold text-xs">
+                      {{ obtenerInicialesNombre(obtenerNombreParticipante(gasto.pagadoPorId)) }}
                     </span>
                   </div>
-                  <div class="text-sm text-gray-900">
-                    {{ obtenerNombreParticipante(gasto.pagadoPorId) }}
+                  <div class="text-xs lg:text-sm text-gray-900 truncate">
+                    {{ obtenerNombreCorto(obtenerNombreParticipante(gasto.pagadoPorId)) }}
                   </div>
                 </div>
               </td>
-              <td class="px-4 py-4 max-w-xs">
-                <div
-                  class="text-sm text-gray-900 truncate"
-                  :title="
-                    obtenerNombresParticipantes(gasto.participantesDeudaIds)
-                  "
-                >
-                  {{ obtenerNombresParticipantes(gasto.participantesDeudaIds) }}
-                </div>
-                <div class="text-xs text-gray-500 mt-1">
-                  {{ gasto.participantesDeudaIds.length }} persona{{
-                    gasto.participantesDeudaIds.length !== 1 ? "s" : ""
-                  }}
+              <!-- Celdas de participación por participante -->
+              <td
+                v-for="participante in viaje.participantes"
+                :key="participante.id"
+                class="px-1 lg:px-2 py-4 whitespace-nowrap text-center"
+              >
+                <div class="flex justify-center">
+                  <span
+                    v-if="gasto.participantesDeudaIds.includes(participante.id)"
+                    class="inline-flex items-center justify-center w-4 lg:w-5 h-4 lg:h-5 bg-green-100 text-green-600 rounded-full text-xs"
+                    :title="`${participante.nombre} participa en este gasto`"
+                  >
+                    ✓
+                  </span>
+                  <span
+                    v-else
+                    class="inline-flex items-center justify-center w-4 lg:w-5 h-4 lg:h-5 bg-gray-100 text-gray-400 rounded-full text-xs"
+                    :title="`${participante.nombre} no participa en este gasto`"
+                  >
+                    ✗
+                  </span>
                 </div>
               </td>
-              <td class="px-4 py-4 whitespace-nowrap text-right">
+              <td class="px-2 lg:px-3 py-4 whitespace-nowrap text-right">
                 <div class="text-sm font-medium text-primary-600">
-                  ${{
-                    formatearMoneda(
-                      gasto.monto / gasto.participantesDeudaIds.length
-                    )
-                  }}
+                  ${{ formatearMoneda(gasto.monto / gasto.participantesDeudaIds.length) }}
                 </div>
               </td>
-              <td class="px-4 py-4 whitespace-nowrap text-center">
+              <td class="px-2 lg:px-3 py-4 whitespace-nowrap text-center">
                 <button
                   @click="eliminarGastoConfirm(gasto.id, gasto.descripcion)"
-                  class="text-red-500 hover:text-red-700 p-2 rounded-md hover:bg-red-50 transition-colors"
+                  class="text-red-500 hover:text-red-700 p-1 lg:p-2 rounded-md hover:bg-red-50 transition-colors text-sm"
                   title="Eliminar gasto"
                 >
                   🗑️
@@ -430,7 +445,7 @@ const emit = defineEmits<{
 }>();
 
 // Composables
-const { agregarGasto, eliminarGasto } = useStorage();
+const { agregarGasto, eliminarGasto, obtenerColorParticipante } = useStorage();
 
 // Estado reactivo
 const formulario = ref({
@@ -540,6 +555,12 @@ const obtenerInicialesNombre = (nombre: string): string => {
     .join("")
     .toUpperCase()
     .substring(0, 2);
+};
+
+const obtenerNombreCorto = (nombre: string): string => {
+  const palabras = nombre.split(" ");
+  if (palabras.length === 1) return palabras[0];
+  return palabras[0] + " " + palabras[palabras.length - 1];
 };
 
 const formatearMoneda = (monto: number): string => {

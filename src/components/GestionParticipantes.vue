@@ -45,9 +45,10 @@
         >
           <div class="flex items-center space-x-3">
             <div
-              class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center"
+              class="w-10 h-10 rounded-full flex items-center justify-center"
+              :style="obtenerEstiloCirculo(participante.id)"
             >
-              <span class="text-primary-600 font-semibold">
+              <span class="font-semibold text-white">
                 {{ obtenerIniciales(participante.nombre) }}
               </span>
             </div>
@@ -121,7 +122,7 @@ const emit = defineEmits<{
 }>();
 
 // Composables
-const { agregarParticipante, eliminarParticipante } = useStorage();
+const { agregarParticipante, eliminarParticipante, obtenerColorParticipante } = useStorage();
 
 // Estado reactivo
 const nombreParticipante = ref("");
@@ -178,6 +179,12 @@ const obtenerIniciales = (nombre: string): string => {
     .join("")
     .toUpperCase()
     .substring(0, 2);
+};
+
+const obtenerEstiloCirculo = (participanteId: string): { backgroundColor: string } => {
+  return {
+    backgroundColor: obtenerColorParticipante(participanteId)
+  };
 };
 
 const obtenerEstadisticasParticipante = (participanteId: string): string => {
