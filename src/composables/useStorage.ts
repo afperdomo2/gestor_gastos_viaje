@@ -152,6 +152,36 @@ export function useStorage() {
     }
   };
 
+  // Editar gasto existente
+  const editarGastoExistente = (
+    viajeId: string,
+    gastoId: string,
+    descripcion: string,
+    monto: number,
+    pagadoPorId: string,
+    participantesDeudaIds: string[],
+    fechaGasto: string
+  ): boolean => {
+    const viaje = obtenerViaje(viajeId);
+    if (!viaje) return false;
+
+    const index = viaje.gastos.findIndex((g) => g.id === gastoId);
+    if (index === -1) return false;
+
+    // Actualizar el gasto existente
+    viaje.gastos[index] = {
+      ...viaje.gastos[index],
+      descripcion: descripcion.trim(),
+      monto: Math.round(monto * 100) / 100, // Redondear a 2 decimales
+      pagadoPorId,
+      participantesDeudaIds: [...participantesDeudaIds],
+      fecha: new Date(fechaGasto + "T12:00:00").toISOString(),
+    };
+
+    guardarDatos();
+    return true;
+  };
+
   // Calcular resumen del viaje
   const calcularResumenViaje = (viajeId: string): ResumenViaje | null => {
     const viaje = obtenerViaje(viajeId);
@@ -271,6 +301,7 @@ export function useStorage() {
     eliminarParticipante,
     agregarGasto,
     eliminarGasto,
+    editarGastoExistente,
     calcularResumenViaje,
     obtenerColorParticipante,
   };

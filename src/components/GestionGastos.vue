@@ -194,7 +194,44 @@
           <div v-if="viaje.gastos.length > 0" class="text-sm text-gray-600">
             Total: ${{ formatearMoneda(totalGastos) }}
           </div>
-          <!-- Botones para cambiar vista -->
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div
+        v-if="viaje.gastos.length > 0"
+        class="mb-4 bg-gray-50 p-4 rounded-lg"
+      >
+        <div class="flex flex-wrap items-center gap-4">
+          <div class="flex items-center space-x-2">
+            <label
+              for="filtro-pagador"
+              class="text-sm font-medium text-gray-700"
+            >
+              🔍 Filtrar por quien pagó:
+            </label>
+            <select
+              id="filtro-pagador"
+              v-model="filtroPagador"
+              class="text-sm border border-gray-300 rounded-md px-3 py-1 bg-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            >
+              <option value="">Todos los pagadores</option>
+              <option
+                v-for="participante in viaje.participantes"
+                :key="participante.id"
+                :value="participante.id"
+              >
+                {{ participante.nombre }}
+              </option>
+            </select>
+          </div>
+          <button
+            v-if="filtroPagador"
+            @click="limpiarFiltros"
+            class="text-xs text-gray-500 hover:text-gray-700 underline"
+          >
+            Limpiar filtros
+          </button>
         </div>
       </div>
 
@@ -272,6 +309,7 @@
               </th>
             </tr>
           </thead>
+
           <tbody class="bg-white divide-y divide-gray-200">
             <template
               v-for="(fecha, fechaIndex) in fechasOrdenadas"
@@ -371,7 +409,7 @@
                     </span>
                     <span
                       v-else
-                      class="inline-flex items-center justify-center w-4 lg:w-5 h-4 lg:h-5 bg-gray-100 text-gray-400 rounded-full text-xs"
+                      class="inline-flex items-center justify-center w-4 lg:w-5 h-4 lg:h-5 bg-red-100 text-red-600 rounded-full text-xs"
                       :title="`${participante.nombre} no participa en este gasto`"
                     >
                       ✗
@@ -388,18 +426,254 @@
                   </div>
                 </td>
                 <td class="px-2 lg:px-3 py-4 whitespace-nowrap text-center">
-                  <button
-                    @click="eliminarGastoConfirm(gasto.id, gasto.descripcion)"
-                    class="text-red-500 hover:text-red-700 p-1 lg:p-2 rounded-md hover:bg-red-50 transition-colors text-sm"
-                    title="Eliminar gasto"
-                  >
-                    🗑️
-                  </button>
+                  <div class="flex items-center justify-center space-x-1">
+                    <button
+                      @click="editarGasto(gasto)"
+                      class="text-blue-500 hover:text-blue-700 p-1 lg:p-2 rounded-md hover:bg-blue-50 transition-colors text-sm"
+                      title="Editar gasto"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      @click="eliminarGastoConfirm(gasto.id, gasto.descripcion)"
+                      class="text-red-500 hover:text-red-700 p-1 lg:p-2 rounded-md hover:bg-red-50 transition-colors text-sm"
+                      title="Eliminar gasto"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </td>
               </tr>
             </template>
           </tbody>
+
+          <thead class="bg-gray-50">
+            <tr>
+              <th
+                class="px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16 lg:w-20"
+              >
+                📅 Fecha
+              </th>
+              <th
+                class="px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                📝 Descripción
+              </th>
+              <th
+                class="px-2 lg:px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-20 lg:w-24"
+              >
+                💰 Monto
+              </th>
+              <th
+                class="px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24 lg:w-32"
+              >
+                💳 Pagado por
+              </th>
+              <!-- Columnas dinámicas por participante -->
+              <th
+                v-for="participante in viaje.participantes"
+                :key="participante.id"
+                class="px-1 lg:px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12 lg:w-16"
+                :title="participante.nombre"
+              >
+                <div class="flex flex-col items-center space-y-1">
+                  <div
+                    class="w-5 lg:w-6 h-5 lg:h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                    :style="{
+                      backgroundColor: obtenerColorParticipante(
+                        participante.id
+                      ),
+                    }"
+                  >
+                    {{ obtenerInicialesNombre(participante.nombre) }}
+                  </div>
+                  <span
+                    class="text-[9px] lg:text-[10px] leading-tight hidden lg:block"
+                  >
+                    {{ obtenerNombreCorto(participante.nombre) }}
+                  </span>
+                </div>
+              </th>
+              <th
+                class="px-2 lg:px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-20 lg:w-24"
+              >
+                🔢 Por persona
+              </th>
+              <th
+                class="px-2 lg:px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16 lg:w-20"
+              >
+                ⚙️ Acciones
+              </th>
+            </tr>
+          </thead>
         </table>
+      </div>
+    </div>
+
+    <!-- Modal de Edición de Gasto -->
+    <div
+      v-if="mostrarModalEdicion"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      @click="cerrarModalEdicion"
+    >
+      <div
+        class="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto"
+        @click.stop
+      >
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-lg font-semibold text-gray-900">✏️ Editar Gasto</h3>
+          <button
+            @click="cerrarModalEdicion"
+            class="text-gray-400 hover:text-gray-600 p-2"
+          >
+            ✕
+          </button>
+        </div>
+
+        <form @submit.prevent="guardarEdicionGasto" class="space-y-4">
+          <!-- Descripción -->
+          <div>
+            <label
+              for="editar-descripcion"
+              class="block text-sm font-medium text-gray-700 mb-1"
+            >
+              📝 Descripción del gasto
+            </label>
+            <input
+              id="editar-descripcion"
+              v-model="formularioEdicion.descripcion"
+              type="text"
+              required
+              class="input-field"
+              placeholder="Ej: Cena en restaurante"
+            />
+          </div>
+
+          <!-- Monto -->
+          <div>
+            <label
+              for="editar-monto"
+              class="block text-sm font-medium text-gray-700 mb-1"
+            >
+              💰 Monto
+            </label>
+            <input
+              id="editar-monto"
+              v-model.number="formularioEdicion.monto"
+              type="number"
+              min="0"
+              step="0.01"
+              required
+              class="input-field"
+              placeholder="0"
+            />
+          </div>
+
+          <!-- Fecha -->
+          <div>
+            <label
+              for="editar-fecha"
+              class="block text-sm font-medium text-gray-700 mb-1"
+            >
+              📅 Fecha del gasto
+            </label>
+            <input
+              id="editar-fecha"
+              v-model="formularioEdicion.fechaGasto"
+              type="date"
+              required
+              class="input-field"
+            />
+          </div>
+
+          <!-- Pagado por -->
+          <div>
+            <label
+              for="editar-pagado-por"
+              class="block text-sm font-medium text-gray-700 mb-1"
+            >
+              💳 Pagado por
+            </label>
+            <select
+              id="editar-pagado-por"
+              v-model="formularioEdicion.pagadoPorId"
+              required
+              class="input-field"
+            >
+              <option value="" disabled>Selecciona quien pagó</option>
+              <option
+                v-for="participante in viaje.participantes"
+                :key="participante.id"
+                :value="participante.id"
+              >
+                {{ participante.nombre }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Participantes que deben -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              👥 ¿Quiénes deben pagar este gasto?
+            </label>
+            <div class="space-y-2">
+              <div
+                v-for="participante in viaje.participantes"
+                :key="participante.id"
+                class="flex items-center"
+              >
+                <input
+                  :id="`editar-participante-${participante.id}`"
+                  v-model="formularioEdicion.participantesDeudaIds"
+                  :value="participante.id"
+                  type="checkbox"
+                  class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                />
+                <label
+                  :for="`editar-participante-${participante.id}`"
+                  class="ml-2 text-sm text-gray-900"
+                >
+                  {{ participante.nombre }}
+                </label>
+              </div>
+            </div>
+
+            <div class="flex space-x-2 mt-3">
+              <button
+                type="button"
+                @click="seleccionarTodosEdicion"
+                class="text-xs text-primary-600 hover:text-primary-800"
+              >
+                Seleccionar todos
+              </button>
+              <button
+                type="button"
+                @click="deseleccionarTodosEdicion"
+                class="text-xs text-gray-600 hover:text-gray-800"
+              >
+                Deseleccionar todos
+              </button>
+            </div>
+          </div>
+
+          <!-- Botones -->
+          <div class="flex justify-end space-x-3 pt-4">
+            <button
+              type="button"
+              @click="cerrarModalEdicion"
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              :disabled="formularioEdicion.participantesDeudaIds.length === 0"
+              class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed rounded-md transition-colors"
+            >
+              💾 Guardar Cambios
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
@@ -422,7 +696,12 @@ const emit = defineEmits<{
 }>();
 
 // Composables
-const { agregarGasto, eliminarGasto, obtenerColorParticipante } = useStorage();
+const {
+  agregarGasto,
+  eliminarGasto,
+  editarGastoExistente,
+  obtenerColorParticipante,
+} = useStorage();
 
 // Estado reactivo
 const formulario = ref({
@@ -433,9 +712,32 @@ const formulario = ref({
   participantesDeudaIds: [] as string[],
 });
 
+// Estado para filtros
+const filtroPagador = ref("");
+
+// Estado para edición
+const mostrarModalEdicion = ref(false);
+const gastoEditando = ref<string | null>(null);
+const formularioEdicion = ref({
+  descripcion: "",
+  monto: 0,
+  fechaGasto: "",
+  pagadoPorId: "",
+  participantesDeudaIds: [] as string[],
+});
+
 // Computed
 const gastosOrdenados = computed(() => {
-  return [...props.viaje.gastos].sort(
+  let gastosFiltrados = [...props.viaje.gastos];
+
+  // Aplicar filtro por pagador si está seleccionado
+  if (filtroPagador.value) {
+    gastosFiltrados = gastosFiltrados.filter(
+      (gasto) => gasto.pagadoPorId === filtroPagador.value
+    );
+  }
+
+  return gastosFiltrados.sort(
     (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
   );
 });
@@ -543,6 +845,70 @@ const seleccionarTodos = (): void => {
 
 const deseleccionarTodos = (): void => {
   formulario.value.participantesDeudaIds = [];
+};
+
+// Funciones para filtros
+const limpiarFiltros = (): void => {
+  filtroPagador.value = "";
+};
+
+// Funciones para edición
+const editarGasto = (gasto: any): void => {
+  gastoEditando.value = gasto.id;
+  formularioEdicion.value = {
+    descripcion: gasto.descripcion,
+    monto: gasto.monto,
+    fechaGasto: gasto.fecha.split("T")[0], // Extraer solo la fecha
+    pagadoPorId: gasto.pagadoPorId,
+    participantesDeudaIds: [...gasto.participantesDeudaIds],
+  };
+  mostrarModalEdicion.value = true;
+};
+
+const cerrarModalEdicion = (): void => {
+  mostrarModalEdicion.value = false;
+  gastoEditando.value = null;
+  formularioEdicion.value = {
+    descripcion: "",
+    monto: 0,
+    fechaGasto: "",
+    pagadoPorId: "",
+    participantesDeudaIds: [],
+  };
+};
+
+const guardarEdicionGasto = (): void => {
+  if (!gastoEditando.value) return;
+
+  if (formularioEdicion.value.participantesDeudaIds.length === 0) {
+    alert("Debes seleccionar al menos un participante que deba pagar");
+    return;
+  }
+
+  const exito = editarGastoExistente(
+    props.viaje.id,
+    gastoEditando.value,
+    formularioEdicion.value.descripcion,
+    formularioEdicion.value.monto,
+    formularioEdicion.value.pagadoPorId,
+    formularioEdicion.value.participantesDeudaIds,
+    formularioEdicion.value.fechaGasto
+  );
+
+  if (exito) {
+    cerrarModalEdicion();
+    emit("gastoAgregado"); // Reutilizamos este emit para actualizar los balances
+  }
+};
+
+const seleccionarTodosEdicion = (): void => {
+  formularioEdicion.value.participantesDeudaIds = props.viaje.participantes.map(
+    (p) => p.id
+  );
+};
+
+const deseleccionarTodosEdicion = (): void => {
+  formularioEdicion.value.participantesDeudaIds = [];
 };
 
 const obtenerNombreParticipante = (id: string): string => {
