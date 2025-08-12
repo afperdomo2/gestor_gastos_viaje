@@ -25,10 +25,12 @@ Una aplicación web moderna para gestionar y liquidar gastos compartidos en viaj
 ## 📦 Instalación y Desarrollo
 
 ### Requisitos
+
 - Node.js 22 o superior
 - npm o yarn
 
 ### Configuración
+
 ```bash
 # Clonar el repositorio
 git clone <tu-repositorio>
@@ -50,14 +52,17 @@ npm run preview
 ## 🎯 Uso de la Aplicación
 
 ### 1. Crear un Viaje
+
 - Haz clic en "Nuevo Viaje" en la pantalla principal
 - Ingresa el nombre del viaje (ej: "Viaje a Cartagena")
 
 ### 2. Agregar Participantes
+
 - Ve a la pestaña "Participantes"
 - Agrega a todas las personas que participarán en el viaje
 
 ### 3. Registrar Gastos
+
 - Ve a la pestaña "Gastos"
 - Para cada gasto, especifica:
   - Descripción (ej: "Hotel", "Cena", "Gasolina")
@@ -66,6 +71,7 @@ npm run preview
   - Quiénes deben pagar (puedes seleccionar múltiples personas)
 
 ### 4. Ver Balances
+
 - La pestaña "Resumen" muestra estadísticas generales
 - La pestaña "Balances" muestra la matriz de deudas y liquidación final
 
@@ -120,12 +126,14 @@ src/
 ## 🚀 Despliegue
 
 ### GitHub Pages
+
 ```bash
 # Construir y desplegar a GitHub Pages
 npm run deploy
 ```
 
 ### Manual
+
 ```bash
 # Construir para producción
 npm run build
@@ -176,6 +184,7 @@ Las contribuciones son bienvenidas. Por favor:
 ## 🐛 Reportar Bugs
 
 Si encuentras algún bug, por favor abre un issue describiendo:
+
 - Pasos para reproducir el problema
 - Comportamiento esperado vs comportamiento actual
 - Screenshots si es necesario

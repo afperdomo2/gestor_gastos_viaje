@@ -2,7 +2,7 @@
   <div class="space-y-8">
     <!-- Header del Viaje -->
     <div class="card">
-      <h2 class="text-3xl font-bold text-gray-900 mb-2">{{ viaje.nombre }}</h2>
+      <h2 class="mb-2 text-3xl font-bold text-gray-900">{{ viaje.nombre }}</h2>
       <p class="text-gray-600">
         Creado el {{ formatearFecha(viaje.fechaCreacion) }}
       </p>
@@ -10,7 +10,7 @@
 
     <!-- Tabs de Navegación -->
     <div class="border-b border-gray-200">
-      <nav class="-mb-px flex space-x-8">
+      <nav class="flex -mb-px space-x-8">
         <button
           v-for="tab in tabs"
           :key="tab.id"
@@ -62,7 +62,7 @@
 
 <script setup lang="ts">
 import BalancesViaje from "@/components/BalancesViaje.vue";
-import GestionGastos from "@/components/GestionGastos.vue";
+import GestionGastos from "@/components/GestionGastos/Index.vue";
 import GestionParticipantes from "@/components/GestionParticipantes.vue";
 import ResumenViaje from "@/components/ResumenViaje.vue";
 import { useStorage } from "@/composables/useStorage";

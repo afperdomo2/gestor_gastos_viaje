@@ -2,7 +2,7 @@
   <div class="space-y-6">
     <!-- Formulario Agregar Participante -->
     <div class="card">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">
+      <h3 class="mb-4 text-lg font-semibold text-gray-900">
         Agregar Participante
       </h3>
       <form @submit.prevent="agregarNuevoParticipante" class="flex gap-3">
@@ -21,7 +21,7 @@
 
     <!-- Lista de Participantes -->
     <div class="card">
-      <div class="flex justify-between items-center mb-4">
+      <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-semibold text-gray-900">
           Participantes ({{ viaje.participantes.length }})
         </h3>
@@ -29,9 +29,9 @@
 
       <div
         v-if="viaje.participantes.length === 0"
-        class="text-center py-8 text-gray-500"
+        class="py-8 text-center text-gray-500"
       >
-        <p class="text-lg mb-2">👥 No hay participantes aún</p>
+        <p class="mb-2 text-lg">👥 No hay participantes aún</p>
         <p class="text-sm">
           Agrega al menos una persona para comenzar a registrar gastos
         </p>
@@ -41,11 +41,11 @@
         <div
           v-for="participante in viaje.participantes"
           :key="participante.id"
-          class="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+          class="flex items-center justify-between p-4 rounded-lg bg-gray-50"
         >
           <div class="flex items-center space-x-3">
             <div
-              class="w-10 h-10 rounded-full flex items-center justify-center"
+              class="flex items-center justify-center w-10 h-10 rounded-full"
               :style="obtenerEstiloCirculo(participante.id)"
             >
               <span class="font-semibold text-white">
@@ -66,7 +66,7 @@
             @click="
               eliminarParticipanteConfirm(participante.id, participante.nombre)
             "
-            class="text-red-500 hover:text-red-700 p-2 rounded-md hover:bg-red-50"
+            class="p-2 text-red-500 rounded-md hover:text-red-700 hover:bg-red-50"
             title="Eliminar participante"
           >
             🗑️
@@ -76,17 +76,17 @@
     </div>
 
     <!-- Información de Ayuda -->
-    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+    <div class="p-4 border border-blue-200 rounded-lg bg-blue-50">
       <div class="flex">
         <div class="flex-shrink-0">
-          <span class="text-blue-400 text-xl">ℹ️</span>
+          <span class="text-xl text-blue-400">ℹ️</span>
         </div>
         <div class="ml-3">
           <h3 class="text-sm font-medium text-blue-800">
             Consejos sobre participantes
           </h3>
           <div class="mt-2 text-sm text-blue-700">
-            <ul class="list-disc list-inside space-y-1">
+            <ul class="space-y-1 list-disc list-inside">
               <li>
                 Puedes agregar o eliminar participantes en cualquier momento
               </li>
@@ -122,34 +122,36 @@ const emit = defineEmits<{
 }>();
 
 // Composables
-const { agregarParticipante, eliminarParticipante, obtenerColorParticipante } = useStorage();
+const { agregarParticipante, eliminarParticipante, obtenerColorParticipante } =
+  useStorage();
 
 // Estado reactivo
 const nombreParticipante = ref("");
 
 // Métodos
 const agregarNuevoParticipante = (): void => {
-  if (nombreParticipante.value.trim()) {
-    // Verificar que no exista un participante con el mismo nombre
-    const nombreExiste = props.viaje.participantes.some(
-      (p) =>
-        p.nombre.toLowerCase().trim() ===
-        nombreParticipante.value.toLowerCase().trim()
-    );
+  if (!nombreParticipante.value.trim()) {
+    return;
+  }
+  // Verificar que no exista un participante con el mismo nombre
+  const nombreExiste = props.viaje.participantes.some(
+    (p) =>
+      p.nombre.toLowerCase().trim() ===
+      nombreParticipante.value.toLowerCase().trim()
+  );
 
-    if (nombreExiste) {
-      alert("Ya existe un participante con ese nombre");
-      return;
-    }
+  if (nombreExiste) {
+    alert("Ya existe un participante con ese nombre");
+    return;
+  }
 
-    const participante = agregarParticipante(
-      props.viaje.id,
-      nombreParticipante.value
-    );
-    if (participante) {
-      nombreParticipante.value = "";
-      emit("participanteAgregado");
-    }
+  const participante = agregarParticipante(
+    props.viaje.id,
+    nombreParticipante.value
+  );
+  if (participante) {
+    nombreParticipante.value = "";
+    emit("participanteAgregado");
   }
 };
 
@@ -181,9 +183,11 @@ const obtenerIniciales = (nombre: string): string => {
     .substring(0, 2);
 };
 
-const obtenerEstiloCirculo = (participanteId: string): { backgroundColor: string } => {
+const obtenerEstiloCirculo = (
+  participanteId: string
+): { backgroundColor: string } => {
   return {
-    backgroundColor: obtenerColorParticipante(participanteId)
+    backgroundColor: obtenerColorParticipante(participanteId),
   };
 };
 
